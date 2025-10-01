@@ -5,9 +5,12 @@ A lightweight, secure VPN implementation built with Python featuring AES-256-GCM
 ## 🌟 Features
 
 - **Strong Encryption**: AES-256-GCM encryption for secure data transmission
+- **Global Server Network**: 10 countries with multiple server locations
+- **Smart Server Selection**: Auto-select best servers based on load and ping
+- **Real-time Server Stats**: Live server load monitoring and ping estimates
 - **User Authentication**: Multi-user support with password-based authentication
 - **Cross-Platform**: Works on Windows, macOS, and Linux
-- **GUI Interface**: Easy-to-use graphical interface for both server and client
+- **GUI Interface**: Modern graphical interface with location map and server stats
 - **Command Line**: Full CLI support for automated deployments
 - **Lightweight**: Minimal dependencies and resource usage
 - **Modular Design**: Clean, extensible codebase
@@ -57,14 +60,17 @@ python fosen_vpn.py client
 
 ```
 Fosen-Vpn/
-├── fosen_vpn.py      # Main entry point
-├── vpn_server.py     # VPN server implementation
-├── vpn_client.py     # VPN client implementation
-├── vpn_gui.py        # GUI interface
-├── config.ini        # Configuration file
-├── test_vpn.py       # Unit tests
-├── requirements.txt  # Dependencies
-└── README.md         # This file
+├── fosen_vpn.py        # Main entry point
+├── vpn_server.py       # VPN server implementation
+├── vpn_client.py       # VPN client implementation
+├── vpn_gui.py          # GUI interface with location selection
+├── vpn_locations.py    # Server location management
+├── config.ini          # Configuration file
+├── test_vpn.py         # Unit tests
+├── requirements.txt    # Dependencies
+├── setup.bat           # Windows setup script
+├── setup.sh            # Linux/macOS setup script
+└── README.md           # This file
 ```
 
 ## 🔧 Configuration
@@ -138,21 +144,88 @@ python -m unittest test_vpn.TestVPNProtocol
 - colorama>=0.4.6 (optional, for colored output)
 - tkinter (usually included with Python)
 
+## 🌍 Available Server Locations
+
+| Country | Flag | Servers | Cities |
+|---------|------|---------|--------|
+| United States | 🇺🇸 | 5 | New York, Miami, Los Angeles, San Francisco, Chicago |
+| United Kingdom | 🇬🇧 | 3 | London, Manchester |
+| Germany | 🇩🇪 | 3 | Frankfurt, Berlin |
+| Japan | 🇯🇵 | 3 | Tokyo, Osaka |
+| Canada | 🇨🇦 | 2 | Toronto, Vancouver |
+| France | 🇫🇷 | 2 | Paris |
+| Netherlands | 🇳🇱 | 2 | Amsterdam |
+| Singapore | 🇸🇬 | 2 | Singapore |
+| Australia | 🇦🇺 | 2 | Sydney, Melbourne |
+| Switzerland | 🇨🇭 | 1 | Zurich |
+
 ## 🖥️ GUI Screenshots
 
 ### Server Interface
 - Server configuration and control
 - Real-time connection logs
 - User management
+- Server location overview with statistics
 - Status monitoring
 
 ### Client Interface
-- Connection settings
-- Secure messaging
-- Connection status
-- Real-time communication
+- **Location Selection**: Choose from 10 countries with multiple servers
+- **Smart Connect**: Auto-select best server based on load and ping
+- **Real-time Stats**: Live server load and ping information
+- **Connection Status**: Visual connection status with server details
+- **Secure Messaging**: End-to-end encrypted communication
+
+## 🌐 How to Use Server Locations
+
+### GUI Method (Recommended)
+
+1. **Launch the VPN Client**:
+   ```bash
+   python fosen_vpn.py
+   ```
+   Choose "No" to run the client.
+
+2. **Select Your Location**:
+   - Use the **Country** dropdown to select your preferred country
+   - The **Server** dropdown will show available servers with load and ping info
+   - Green 🟢 = Low load (excellent), Yellow 🟡 = Medium load (good), Red 🔴 = High load (busy)
+
+3. **Auto-Select Best Server**:
+   - Click **"🚀 Best Server"** to automatically select the globally best server
+   - The system will choose based on lowest server load
+
+4. **Manual Server Selection**:
+   - Choose any country from the dropdown
+   - Select a specific server based on city, load, and ping
+   - Server info shows: City, Load percentage, Status, and estimated ping
+
+5. **Connect**:
+   - Enter your username and password
+   - Click **"🔗 Connect to VPN"**
+   - Connection status will show your selected server location
 
 ## 💡 Usage Examples
+
+### Working with Server Locations
+```python
+from vpn_locations import VPNServerLocation
+
+# Initialize location manager
+locations = VPNServerLocation()
+
+# Get all available countries
+countries = locations.get_countries()
+print("Available countries:", countries)
+
+# Get servers for a specific country
+us_servers = locations.get_servers_by_country("United States")
+for server in us_servers:
+    print(f"{server['name']} - {server['city']} (Load: {server['load']}%)")
+
+# Auto-select best server globally
+best_country, best_server = locations.get_best_server()
+print(f"Best server: {best_server['name']} in {best_country}")
+```
 
 ### Starting a VPN Server
 ```python
@@ -166,12 +239,18 @@ server.start()
 ### Connecting a VPN Client
 ```python
 from vpn_client import VPNClient
+from vpn_locations import VPNServerLocation
 
-client = VPNClient("server.example.com", 8080, "username", "password")
+# Select best server automatically
+locations = VPNServerLocation()
+country, server = locations.get_best_server()
+
+# Connect to VPN (using localhost for demo)
+client = VPNClient("localhost", 8080, "username", "password")
 if client.connect():
     client.send_data(b"Hello, VPN!")
     response = client.receive_data()
-    print(response)
+    print(f"Connected via {server['name']} in {country}")
 ```
 
 ## 🔒 Security Considerations
